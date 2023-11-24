@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">NoteApp</string>
+
+
+    <string name="empty_title_text">Not başlığı</string>
+    <string name="empty_note_text">Not içeriği</string>
+
+    <string name="note_head_hint_text">Not başlığı giriniz..</string>
+    <string name="note_content_text">Notunuzu giriniz..</string>
+    <string name="save_button_text">Kaydet</string>
+    <string name="edit_button_text">Düzenle</string>
+    <string name="cancel_button_text">İptal</string>
+    <string name="delete_button_text">Sil</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
