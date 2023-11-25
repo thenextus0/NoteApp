@@ -20,19 +20,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".OldActivities.EditNoteActivity"
-            android:exported="false" />
-        <activity
-            android:name=".OldActivities.NewNoteActivity"
-            android:exported="false" />
-        <activity
-            android:name=".OldActivities.ShowNoteActivity"
-            android:exported="false" />
-        <activity
-            android:name=".OldActivities.MainActivity"
-            android:exported="false">
-        </activity>
     </application>
 
 </manifest>

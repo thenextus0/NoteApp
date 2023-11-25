@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/fragment_nagivation"
+    app:startDestination="@id/mainMenuFragment">
+
+    <fragment
+        android:id="@+id/mainMenuFragment"
+        android:name="com.thenextus.noteapp.Fragments.MainMenuFragment"
+        android:label="MainMenuFragment" >
+        <action
+            android:id="@+id/action_mainMenuFragment_to_newNoteFragment"
+            app:destination="@id/newNoteFragment" />
+        <action
+            android:id="@+id/action_mainMenuFragment_to_showNoteFragment"
+            app:destination="@id/showNoteFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/newNoteFragment"
+        android:name="com.thenextus.noteapp.Fragments.NewNoteFragment"
+        android:label="NewNoteFragment" >
+        <action
+            android:id="@+id/action_newNoteFragment_to_mainMenuFragment"
+            app:destination="@id/mainMenuFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/showNoteFragment"
+        android:name="com.thenextus.noteapp.Fragments.ShowNoteFragment"
+        android:label="ShowNoteFragment" >
+        <action
+            android:id="@+id/action_showNoteFragment_to_editNoteFragment"
+            app:destination="@id/editNoteFragment" />
+        <action
+            android:id="@+id/action_showNoteFragment_to_mainMenuFragment"
+            app:destination="@id/mainMenuFragment" />
+        <argument
+            android:name="noteID"
+            app:argType="integer" />
+    </fragment>
+    <fragment
+        android:id="@+id/editNoteFragment"
+        android:name="com.thenextus.noteapp.Fragments.EditNoteFragment"
+        android:label="EditNoteFragment" >
+        <action
+            android:id="@+id/action_editNoteFragment_to_mainMenuFragment"
+            app:destination="@id/mainMenuFragment" />
+        <argument
+            android:name="noteID"
+            app:argType="integer" />
+    </fragment>
+</navigation>

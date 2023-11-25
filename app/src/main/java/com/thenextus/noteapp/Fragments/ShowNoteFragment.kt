@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentTransaction
+import androidx.navigation.Navigation
 import com.thenextus.noteapp.Classes.KeyValues
 import com.thenextus.noteapp.FragmentActivity
 import com.thenextus.noteapp.R
@@ -24,17 +25,26 @@ class ShowNoteFragment : Fragment() {
         _binding = FragmentShowNoteBinding.inflate(inflater, container, false)
         val view = binding.root
 
-        val position = arguments?.getInt(KeyValues.NotePositionBundle.key) as Int
+        var position: Int = 0
+        arguments?.let {
+            position = ShowNoteFragmentArgs.fromBundle(it).noteID as Int
+        }
+        //val position = arguments?.getInt(KeyValues.NotePositionBundle.key) as Int
+
         val noteViewModel = (activity as FragmentActivity).getNoteViewModel()
         val note = noteViewModel.getSpecificNote(position)
 
         binding.textView.text = note.title
         binding.editTextText.text = note.content
 
-        binding.buttonCancel.setOnClickListener { returnToMainMenu() }
+        binding.buttonCancel.setOnClickListener {
+            returnToMainMenu(it) }
 
         binding.buttonEdit.setOnClickListener {
+            val action = ShowNoteFragmentDirections.actionShowNoteFragmentToEditNoteFragment(position)
+            Navigation.findNavController(it).navigate(action)
 
+            /*
             val notePosition = Bundle()
             notePosition.putInt(KeyValues.NotePositionBundle.key, position)
 
@@ -47,13 +57,19 @@ class ShowNoteFragment : Fragment() {
 
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.commit()
+            */
+
         }
 
 
         return view
     }
 
-    private fun returnToMainMenu() {
+    private fun returnToMainMenu(view: View) {
+        val action = ShowNoteFragmentDirections.actionShowNoteFragmentToMainMenuFragment()
+        Navigation.findNavController(view).navigate(action)
+
+        /*
         val mainMenuFragment = MainMenuFragment()
         val fragmentTransaction: FragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
 
@@ -62,8 +78,8 @@ class ShowNoteFragment : Fragment() {
 
         fragmentTransaction.addToBackStack(null)
         fragmentTransaction.commit()
+        */
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()
