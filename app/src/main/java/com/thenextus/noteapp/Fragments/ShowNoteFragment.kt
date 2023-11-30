@@ -1,21 +1,26 @@
 package com.thenextus.noteapp.Fragments
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
-import com.thenextus.noteapp.Classes.KeyValues
-import com.thenextus.noteapp.FragmentActivity
-import com.thenextus.noteapp.R
+import com.thenextus.noteapp.Classes.ServiceLocator
+import com.thenextus.noteapp.Database.Note
+import com.thenextus.noteapp.Database.NoteViewModel
+import com.thenextus.noteapp.Database.NoteViewModelFactory
 import com.thenextus.noteapp.databinding.FragmentShowNoteBinding
 
 class ShowNoteFragment : Fragment() {
 
     private var _binding: FragmentShowNoteBinding? = null
     private val binding get() = _binding!!
+    private lateinit var noteViewModel: NoteViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,62 +28,35 @@ class ShowNoteFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentShowNoteBinding.inflate(inflater, container, false)
-        val view = binding.root
-
-        var position: Int = 0
-        arguments?.let {
-            position = ShowNoteFragmentArgs.fromBundle(it).noteID as Int
-        }
-        //val position = arguments?.getInt(KeyValues.NotePositionBundle.key) as Int
-
-        val noteViewModel = (activity as FragmentActivity).getNoteViewModel()
-        val note = noteViewModel.getSpecificNote(position)
-
-        binding.textView.text = note.title
-        binding.editTextText.text = note.content
-
-        binding.buttonCancel.setOnClickListener {
-            returnToMainMenu(it) }
-
-        binding.buttonEdit.setOnClickListener {
-            val action = ShowNoteFragmentDirections.actionShowNoteFragmentToEditNoteFragment(position)
-            Navigation.findNavController(it).navigate(action)
-
-            /*
-            val notePosition = Bundle()
-            notePosition.putInt(KeyValues.NotePositionBundle.key, position)
-
-            val editNoteFragment = EditNoteFragment()
-            editNoteFragment.arguments = notePosition
-            val fragmentTransaction: FragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
-
-            fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-            fragmentTransaction.replace(R.id.frameLayout, editNoteFragment)
-
-            fragmentTransaction.addToBackStack(null)
-            fragmentTransaction.commit()
-            */
-
-        }
-
-
-        return view
+        return binding.root
     }
 
     private fun returnToMainMenu(view: View) {
         val action = ShowNoteFragmentDirections.actionShowNoteFragmentToMainMenuFragment()
         Navigation.findNavController(view).navigate(action)
+    }
 
-        /*
-        val mainMenuFragment = MainMenuFragment()
-        val fragmentTransaction: FragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-        fragmentTransaction.replace(R.id.frameLayout, mainMenuFragment)
+        noteViewModel = ViewModelProvider(requireActivity(), NoteViewModelFactory(ServiceLocator.provideNoteRepository())).get(NoteViewModel::class.java)
 
-        fragmentTransaction.addToBackStack(null)
-        fragmentTransaction.commit()
-        */
+        var noteID: String = ""
+        arguments?.let { noteID = ShowNoteFragmentArgs.fromBundle(it).noteID as String }
+
+        var note: LiveData<Note>
+        noteViewModel.getSpesificNote(noteID).observe(viewLifecycleOwner, Observer{
+            note = noteViewModel.getSpesificNote(noteID)
+
+            binding.textView.setText(it.title)
+            binding.editTextText.setText(it.content)
+        })
+
+        binding.buttonCancel.setOnClickListener { returnToMainMenu(it) }
+        binding.buttonEdit.setOnClickListener {
+            val action = ShowNoteFragmentDirections.actionShowNoteFragmentToEditNoteFragment(noteID)
+            Navigation.findNavController(it).navigate(action)
+        }
     }
 
     override fun onDestroyView() {

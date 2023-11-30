@@ -35,7 +35,7 @@
             app:destination="@id/mainMenuFragment" />
         <argument
             android:name="noteID"
-            app:argType="integer" />
+            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/editNoteFragment"
@@ -46,6 +46,6 @@
             app:destination="@id/mainMenuFragment" />
         <argument
             android:name="noteID"
-            app:argType="integer" />
+            app:argType="string" />
     </fragment>
 </navigation>

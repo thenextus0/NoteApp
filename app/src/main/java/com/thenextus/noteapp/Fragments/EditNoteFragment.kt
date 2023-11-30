@@ -6,19 +6,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
-import com.thenextus.noteapp.Classes.Database.NotesDAO
-import com.thenextus.noteapp.Classes.KeyValues
-import com.thenextus.noteapp.Classes.Note
+import com.thenextus.noteapp.Classes.ServiceLocator
+import com.thenextus.noteapp.Database.Note
+import com.thenextus.noteapp.Database.NoteViewModel
+import com.thenextus.noteapp.Database.NoteViewModelFactory
 import com.thenextus.noteapp.FragmentActivity
-import com.thenextus.noteapp.R
 import com.thenextus.noteapp.databinding.FragmentEditNoteBinding
 
 class EditNoteFragment : Fragment() {
 
     private var _binding: FragmentEditNoteBinding? = null
     private val binding get() = _binding!!
+    private lateinit var noteViewModel: NoteViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,62 +28,46 @@ class EditNoteFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentEditNoteBinding.inflate(inflater, container, false)
-        val view = binding.root
+        return binding.root
+    }
 
-        var position: Int = 0
-        arguments?.let {
-            position = EditNoteFragmentArgs.fromBundle(it).noteID
-        }
-        //val position = arguments?.getInt(KeyValues.NotePositionBundle.key) as Int
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        val noteViewModel = (activity as FragmentActivity).getNoteViewModel()
-        val note = noteViewModel.getSpecificNote(position)
+        noteViewModel = ViewModelProvider(requireActivity(), NoteViewModelFactory(ServiceLocator.provideNoteRepository())).get(NoteViewModel::class.java)
+        var noteID: String = ""
+        arguments?.let { noteID = EditNoteFragmentArgs.fromBundle(it).noteID as String }
 
-        binding.textView.setText(note.title)
-        binding.editTextText.setText(note.content)
+        noteViewModel.getSpesificNote(noteID).observe(viewLifecycleOwner, Observer {
+            //var note = noteViewModel.getSpesificNote(noteID)
+            binding.textView.setText(it.title)
+            binding.editTextText.setText(it.content)
 
-        binding.buttonCancel.setOnClickListener {
-            returnToMainMenu(it) }
+            binding.buttonSaveO.setOnClickListener {view ->
 
-        binding.buttonSaveO.setOnClickListener {
-
-            if ((note.content != binding.editTextText.text.toString() || note.title != binding.textView.text.toString()) &&
-                binding.editTextText.text.toString().replace("\\s".toRegex(), "") != "" &&
-                binding.textView.text.toString().replace("\\s".toRegex(), "") != ""
-            ) {
-                noteViewModel.changeNote(Note(note.noteID, binding.textView.text.toString(), binding.editTextText.text.toString()), position)
-                val notesDAO = NotesDAO(requireActivity())
-                notesDAO.updateNoteTitleAndContentByID(Note(note.noteID, binding.textView.text.toString(), binding.editTextText.text.toString()))
-
-                returnToMainMenu(it)
-            } else if (note.content == binding.editTextText.text.toString() && note.title == binding.textView.text.toString()) {
-                Toast.makeText(activity, "Hiçbir alanda değişiklik yapmadınız.", Toast.LENGTH_SHORT).show()
-            } else if (binding.editTextText.text.toString().replace("\\s".toRegex(), "") == "" || binding.textView.text.toString().replace("\\s".toRegex(), "") == "") {
-                Toast.makeText(activity, "Lütfen tüm alanları doldurunuz!", Toast.LENGTH_SHORT).show()
+                if ((it.content != binding.editTextText.text.toString() || it.title != binding.textView.text.toString()) &&
+                    binding.editTextText.text.toString().replace("\\s".toRegex(), "") != "" &&
+                    binding.textView.text.toString().replace("\\s".toRegex(), "") != ""
+                ) {
+                    noteViewModel.updateNote(Note(it.noteID, binding.textView.text.toString(), binding.editTextText.text.toString()))
+                    returnToMainMenu(view)
+                } else if (it.content == binding.editTextText.text.toString() && it.title == binding.textView.text.toString()) {
+                    Toast.makeText(activity, "Hiçbir alanda değişiklik yapmadınız.", Toast.LENGTH_SHORT).show()
+                } else if (binding.editTextText.text.toString().replace("\\s".toRegex(), "") == "" || binding.textView.text.toString().replace("\\s".toRegex(), "") == "") {
+                    Toast.makeText(activity, "Lütfen tüm alanları doldurunuz!", Toast.LENGTH_SHORT).show()
+                }
             }
-        }
-        return view
+        })
+        binding.buttonCancel.setOnClickListener { returnToMainMenu(it) }
     }
 
     private fun returnToMainMenu(view: View) {
         val action = EditNoteFragmentDirections.actionEditNoteFragmentToMainMenuFragment()
         Navigation.findNavController(view).navigate(action)
-
-        /*
-        val mainMenuFragment = MainMenuFragment()
-        val fragmentTransaction: FragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
-
-        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-        fragmentTransaction.replace(R.id.frameLayout, mainMenuFragment)
-
-        fragmentTransaction.addToBackStack(null)
-        fragmentTransaction.commit()
-        */
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
-
 }

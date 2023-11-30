@@ -6,13 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.FragmentTransaction
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
-import com.thenextus.noteapp.Classes.Database.NotesDAO
-import com.thenextus.noteapp.Classes.Note
-import com.thenextus.noteapp.Classes.NoteViewModel
-import com.thenextus.noteapp.FragmentActivity
-import com.thenextus.noteapp.R
+import com.thenextus.noteapp.Classes.ServiceLocator
+import com.thenextus.noteapp.Database.Note
+import com.thenextus.noteapp.Database.NoteViewModel
+import com.thenextus.noteapp.Database.NoteViewModelFactory
 import com.thenextus.noteapp.databinding.FragmentNewNoteBinding
 import java.util.UUID
 
@@ -30,41 +29,30 @@ class NewNoteFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentNewNoteBinding.inflate(inflater, container, false)
         val view = binding.root
-
-        binding.buttonCancel.setOnClickListener {
-            returnToMainMenu(it) }
-
-        binding.buttonSaveNew.setOnClickListener {
-            noteViewModel = (activity as FragmentActivity).getNoteViewModel()
-
-            if (binding.editTextText.text.toString().replace("\\s".toRegex(), "") != "" &&
-                binding.textView.text.toString().replace("\\s".toRegex(), "") != "") {
-                noteViewModel.addNote(Note(UUID.randomUUID().toString(), binding.textView.text.toString(), binding.editTextText.text.toString()))
-
-                val notesDAO = NotesDAO(requireActivity())
-                notesDAO.insertNote(Note(UUID.randomUUID().toString(), binding.textView.text.toString(), binding.editTextText.text.toString()))
-
-                returnToMainMenu(it)
-            }
-            else { Toast.makeText(activity, "Lütfen tüm alanları doldurunuz.", Toast.LENGTH_SHORT).show() }
-        }
         return view
     }
 
     private fun returnToMainMenu(view: View) {
         val action = NewNoteFragmentDirections.actionNewNoteFragmentToMainMenuFragment()
         Navigation.findNavController(view).navigate(action)
+    }
 
-        /* NavGraph öncesi.
-        val mainMenuFragment = MainMenuFragment()
-        val fragmentTransaction: FragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-        fragmentTransaction.replace(R.id.frameLayout, mainMenuFragment)
+        binding.buttonCancel.setOnClickListener { returnToMainMenu(it) }
 
-        fragmentTransaction.addToBackStack(null)
-        fragmentTransaction.commit()
-        */
+        binding.buttonSaveNew.setOnClickListener {
+
+            noteViewModel = ViewModelProvider(requireActivity(), NoteViewModelFactory(ServiceLocator.provideNoteRepository())).get(NoteViewModel::class.java)
+
+            if (binding.editTextText.text.toString().replace("\\s".toRegex(), "") != "" &&
+                binding.textView.text.toString().replace("\\s".toRegex(), "") != "") {
+                noteViewModel.insertNote(Note(UUID.randomUUID().toString(), binding.textView.text.toString(), binding.editTextText.text.toString()))
+                returnToMainMenu(it)
+            }
+            else { Toast.makeText(activity, "Lütfen tüm alanları doldurunuz.", Toast.LENGTH_SHORT).show() }
+        }
     }
 
     override fun onDestroyView() {
